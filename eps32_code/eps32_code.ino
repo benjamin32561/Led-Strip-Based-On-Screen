@@ -14,7 +14,7 @@
 #define G_CH 1
 #define B_CH 2
 //PWM CONST
-#define FREQ 10
+#define FREQ 30000
 #define RES 8
 
 IPAddress IP(10, 100, 102, 100);
