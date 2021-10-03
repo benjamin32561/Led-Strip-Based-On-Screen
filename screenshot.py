@@ -7,6 +7,9 @@ import socket
 IP = "10.100.102.100"
 PORT = 1234
 
+LOWEST_MUL = 0.5
+MID_MUL = 0.75
+
 def numToStr(color:int):
 	to_ret = str(color)
 	while len(to_ret) != 3:
@@ -36,10 +39,21 @@ with mss.mss() as mss_instance:
 	print("Starting loop")
 	try:
 		while 1:
-			screenshot = np.array(mss_instance.grab(monitor))
+			screenshot = np.array(mss_instance.grab(monitor), dtype=np.int16)
 			b = np.sum(screenshot[:,:,0])//pix_am
 			g = np.sum(screenshot[:,:,1])//pix_am
 			r = np.sum(screenshot[:,:,2])//pix_am
+			if r < b and r < g:
+				r = int(r*LOWEST_MUL)
+			elif b < r and b < g:
+				b = int(b*LOWEST_MUL)
+			elif g < r and g < b:
+				g = int(g*LOWEST_MUL)
+			if r > b and r > g:
+				r *= 1.2
+				r = int(r)
+				if r > 256:
+					r = 255
 			to_send = numToStr(r)+numToStr(g)+numToStr(b)+';'
 			s.sendall(to_send.encode())
 			i+=1

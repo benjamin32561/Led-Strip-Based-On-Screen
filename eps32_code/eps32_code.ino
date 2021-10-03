@@ -20,8 +20,8 @@
 IPAddress IP(10, 100, 102, 100);
 IPAddress GATEWAY(10, 100, 102, 1);
 IPAddress SUBNET(255, 255, 255, 0);
-
 WiFiServer server(PORT);
+
 void setLed(int ch, int pin){
   ledcSetup(ch, FREQ, RES);
   ledcAttachPin(pin, ch);
@@ -33,6 +33,13 @@ void connectToWifi()
   while (WiFi.status() != WL_CONNECTED) {delay(1000);}
 }
 
+void writeRGBVal(uint8_t r, uint8_t g, uint8_t b)
+{
+    ledcWrite(R_CH,r);
+    ledcWrite(G_CH,g);
+    ledcWrite(B_CH,b);
+}
+
 void setup(){
   WiFi.begin(SSID,PASSWORD);
   connectToWifi();
@@ -41,6 +48,8 @@ void setup(){
   setLed(G_CH,G);
   setLed(B_CH,B);
   
+  writeRGBVal(0,0,0);
+    
   server.begin();
 }
 
@@ -60,7 +69,6 @@ void loop(){
   WiFiClient client = server.available();
  
   if (client) {
-    ledcWrite(R_CH,256);
     while (client.connected()) {
       char msg[9] = {0};
       int i = 0;
@@ -74,14 +82,13 @@ void loop(){
       int red = extractValue(msg,0,3);
       if (red >= 0 && red <= 256)
       {
-        ledcWrite(R_CH,red);
-        ledcWrite(G_CH,extractValue(msg,3,6));
-        ledcWrite(B_CH,extractValue(msg,6,9));
+        uint8_t r = red, g = 0, b = 0;
+        g = extractValue(msg,3,6);
+        b = extractValue(msg,6,9);
+        writeRGBVal(r,g,b);
       }
     }
     client.stop();
-    ledcWrite(R_CH,0);
-    ledcWrite(G_CH,0);
-    ledcWrite(B_CH,0);
+    writeRGBVal(0,0,0);
   }
 }
